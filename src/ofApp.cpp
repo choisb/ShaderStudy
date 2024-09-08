@@ -2,18 +2,24 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+	ofDisableArbTex(); // (레거시 지원용)텍스처의 스크린 픽셀 좌표 기능 비활성화. UV사용시 필요
+
 	quad.addVertex(glm::vec3(-1.0f, -1.0f, 0.0f));
 	quad.addVertex(glm::vec3(-1.0f, 1.0f, 0.0f));
 	quad.addVertex(glm::vec3(1.0f, 1.0f, 0.0f));
 	quad.addVertex(glm::vec3(1.0f, -1.0f, 0.0f));
-	quad.addColor(ofDefaultColorType(1.0f, 0.0f, 0.0f, 1.0f));
-	quad.addColor(ofDefaultColorType(0.0f, 1.0f, 0.0f, 1.0f));
-	quad.addColor(ofDefaultColorType(0.0f, 0.0f, 1.0f, 1.0f));
-	quad.addColor(ofDefaultColorType(1.0f, 1.0f, 1.0f, 1.0f));
+
+	quad.addTexCoord(glm::vec2(0.0f, 0.0f));
+	quad.addTexCoord(glm::vec2(0.0f, 1.0f));
+	quad.addTexCoord(glm::vec2(1.0f, 1.0f));
+	quad.addTexCoord(glm::vec2(1.0f, 0.0f));
 
 	ofIndexType indices[6] = { 0,1,2,2,3,0 };
 	quad.addIndices(indices, 6);
-	shader.load("first_vertex.vert","first_fragment.frag");
+
+	shader.load("shader/uv_passthrough.vert","shader/texture.frag");
+
+	image.load("texture/parrot.png");
 }
 
 //--------------------------------------------------------------
@@ -24,6 +30,7 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 	shader.begin();
+	shader.setUniformTexture("parrotTex", image, 0);
 	quad.draw();
 	shader.end();
 }
