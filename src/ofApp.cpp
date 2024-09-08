@@ -2,9 +2,17 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	triangle.addVertex(glm::vec3(-1.0f, 1.0f, 0.0f));
-	triangle.addVertex(glm::vec3(-1.0f, -1.0f, 0.0f));
-	triangle.addVertex(glm::vec3(1.0f, -1.0f, 0.0f));
+	quad.addVertex(glm::vec3(-1.0f, -1.0f, 0.0f));
+	quad.addVertex(glm::vec3(-1.0f, 1.0f, 0.0f));
+	quad.addVertex(glm::vec3(1.0f, 1.0f, 0.0f));
+	quad.addVertex(glm::vec3(1.0f, -1.0f, 0.0f));
+	quad.addColor(ofDefaultColorType(1.0f, 0.0f, 0.0f, 1.0f));
+	quad.addColor(ofDefaultColorType(0.0f, 1.0f, 0.0f, 1.0f));
+	quad.addColor(ofDefaultColorType(0.0f, 0.0f, 1.0f, 1.0f));
+	quad.addColor(ofDefaultColorType(1.0f, 1.0f, 1.0f, 1.0f));
+
+	ofIndexType indices[6] = { 0,1,2,2,3,0 };
+	quad.addIndices(indices, 6);
 	shader.load("first_vertex.vert","first_fragment.frag");
 }
 
@@ -16,15 +24,12 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 	shader.begin();
-	shader.setUniform4f("fragCol", glm::vec4(0.0f,0.0f,1.0f,1.0f));
-	triangle.draw();
+	quad.draw();
 	shader.end();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-	glm::vec3 curPos = triangle.getVertex(2);
-	triangle.setVertex(2, curPos + glm::vec3(0, +0.2f, 0));
 }
 
 //--------------------------------------------------------------
