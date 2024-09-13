@@ -21,12 +21,14 @@ public:
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
 
+	void buildMesh(ofMesh& mesh, float w, float h, glm::vec3 pos);
 private:
-	ofMesh quad;
-	ofShader shader;
-	ofImage parrotImage;
-	ofImage checkerImage;
+	ofMesh charMesh;
+	ofMesh backgroundMesh;
+	ofImage alienImg;
+	ofImage backgroundImg;
 
-	float imageColorMultiply = 1.0f;
-	float imageColorAdd = 0.0f;
+	ofShader alphaTestShader;
+
+
 };
