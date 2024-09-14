@@ -24,7 +24,7 @@ public:
 	void buildMesh(ofMesh& mesh, float w, float h, glm::vec3 pos);
 private:
 	ofMesh charMesh;
-	ofImage alienImg;
+	ofImage alienSprite;
 
 	ofMesh backgroundMesh;
 	ofImage backgroundImg;
@@ -39,4 +39,9 @@ private:
 
 	ofShader alphaTestShader;
 	ofShader blendModeShader;
+	ofShader spritesheetShader;
+
+	int spriteFrameRate = 0;
+	glm::vec2 spriteSize;
+	float lastTime = 0;
 };
