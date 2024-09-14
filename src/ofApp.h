@@ -24,11 +24,19 @@ public:
 	void buildMesh(ofMesh& mesh, float w, float h, glm::vec3 pos);
 private:
 	ofMesh charMesh;
-	ofMesh backgroundMesh;
 	ofImage alienImg;
+
+	ofMesh backgroundMesh;
 	ofImage backgroundImg;
 
+	ofMesh cloudMesh;
+	ofImage cloudImg;
+	float cloudMaxAlpha = 1.0f;
+
+	ofMesh sunMesh;
+	ofImage sunImg;
+	float sumMaxAlpha = 1.0f;
+
 	ofShader alphaTestShader;
-
-
+	ofShader blendModeShader;
 };
