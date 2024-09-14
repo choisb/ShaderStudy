@@ -2,9 +2,8 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	lastTime = ofGetElapsedTimef();
-
 	ofDisableArbTex(); // (레거시 지원용)텍스처의 스크린 픽셀 좌표 기능 비활성화. UV사용시 필요
+	ofLogToConsole();
 
 	buildMesh(charMesh, 0.1f, 0.2f, glm::vec3(0.0f, -0.2f, 0.0f));
 	alienSprite.load("texture/walk_sheet.png");
@@ -34,9 +33,6 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	const float currentTime = ofGetElapsedTimef();
-	const float deltaTime = currentTime - lastTime;
-	lastTime = currentTime;
 
 	ofEnableDepthTest(); // 깊이 버퍼를 만들어서 프래그먼트 세이더 단계에서 깊이 테스트를 하도록 활성화. 깊이는 버텍스의 z값 사용.
 	ofDisableBlendMode();
@@ -47,16 +43,15 @@ void ofApp::draw(){
 	alphaTestShader.end();
 
 	spritesheetShader.begin();
+	const float currentTime = ofGetElapsedTimef();
 	const int spriteFrame = (int)(spriteFrameRate * currentTime) % 10;
 	glm::vec2 spriteFrameOffset = glm::vec2(spriteFrame % 3, (int)(spriteFrame / 3));
 	spritesheetShader.setUniformTexture("tex", alienSprite, 0);
 	spritesheetShader.setUniform2f("size", spriteSize);
 	spritesheetShader.setUniform2f("offset", spriteFrameOffset);
-
 	charMesh.draw();
 	spritesheetShader.end();
 
-	
 	ofDisableDepthTest();	// 블랜드모드에서는 투명한 부분이 불필요하게 Depth Test를 진행하는 것을 막기 위해서 비활성화.
 	blendModeShader.begin();
 	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ALPHA);
@@ -71,11 +66,21 @@ void ofApp::draw(){
 	sunMesh.draw();
 
 	blendModeShader.end();
-
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+	switch (key)
+	{
+	case 'v':
+		ofSetLogLevel(ofLogLevel::OF_LOG_VERBOSE);
+		break;
+	case 'n':
+		ofSetLogLevel(ofLogLevel::OF_LOG_NOTICE);
+		break;
+	default:
+		break;
+	}
 }
 
 //--------------------------------------------------------------

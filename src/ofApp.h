@@ -43,5 +43,4 @@ private:
 
 	int spriteFrameRate = 0;
 	glm::vec2 spriteSize;
-	float lastTime = 0;
 };
