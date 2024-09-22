@@ -5,17 +5,11 @@ void ofApp::setup(){
 	ofDisableArbTex(); // (레거시 지원용)텍스처의 스크린 픽셀 좌표 기능 비활성화. UV사용시 필요
 	ofLogToConsole();
 
-	buildMesh(charMesh, 0.1f, 0.2f, glm::vec3(0.0f, -0.2f, 0.0f));
 	alienSprite.load("texture/walk_sheet.png");
-	
-	buildMesh(backgroundMesh, 1.0f, 1.0f, glm::vec3(0.0f, 0.0f, 0.5f));
+	charPos = glm::vec3(0.0f, -0.25f, 0.0f);
 	backgroundImg.load("texture/forest.png");
-	
-	buildMesh(cloudMesh, 0.25f, 0.16f, glm::vec3(-0.55f, 0.0f, 0.0f));
 	cloudImg.load("texture/cloud.png");
 	cloudMaxAlpha = 0.9f;
-
-	buildMesh(sunMesh, 1.0, 1.0, glm::vec3(0.0f, 0.0f, 0.4f));
 	sunImg.load("texture/sun.png");
 
 	alphaTestShader.load("shader/vertex/passthrough.vert","shader/fragment/alphaTest.frag");
@@ -24,24 +18,24 @@ void ofApp::setup(){
 
 	spriteFrameRate = 18;
 	spriteSize = glm::vec2(0.28f, 0.19f);
+	buildSpriteMesh();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+	charPos.x += charSpeed * ofGetLastFrameTime();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 
+	buildRenderTransform(backgroundTransform, glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	buildRenderTransform(charTransform, charPos, 0.0f, glm::vec3(0.1f, 0.2f, 1.0f));
+	buildRenderTransform(cloudATransform, glm::vec3(-0.5f, 0.0f, 0.0f), 0.0f, glm::vec3(0.25f, 0.16f, 1.0f));
+	buildRenderTransform(cloudBTransform, glm::vec3(0.2f, 0.2f, 0.0f), 0.0f, glm::vec3(0.25f, 0.16f, 1.0f));
+
 	ofEnableDepthTest(); // 깊이 버퍼를 만들어서 프래그먼트 세이더 단계에서 깊이 테스트를 하도록 활성화. 깊이는 버텍스의 z값 사용.
 	ofDisableBlendMode();
-	alphaTestShader.begin();
-
-	alphaTestShader.setUniformTexture("tex", backgroundImg, 0);
-	backgroundMesh.draw();
-	alphaTestShader.end();
-
 	spritesheetShader.begin();
 	const float currentTime = ofGetElapsedTimef();
 	const int spriteFrame = (int)(spriteFrameRate * currentTime) % 10;
@@ -49,22 +43,39 @@ void ofApp::draw(){
 	spritesheetShader.setUniformTexture("tex", alienSprite, 0);
 	spritesheetShader.setUniform2f("size", spriteSize);
 	spritesheetShader.setUniform2f("offset", spriteFrameOffset);
-	charMesh.draw();
+	spritesheetShader.setUniformMatrix4f("transform", charTransform);
+	spriteMesh.draw();
 	spritesheetShader.end();
 
+	alphaTestShader.begin();
+
+	alphaTestShader.setUniformTexture("tex", backgroundImg, 0);
+	alphaTestShader.setUniformMatrix4f("transform", backgroundTransform);
+
+	spriteMesh.draw();
+	alphaTestShader.end();
+
+
+	
 	ofDisableDepthTest();	// 블랜드모드에서는 투명한 부분이 불필요하게 Depth Test를 진행하는 것을 막기 위해서 비활성화.
 	blendModeShader.begin();
 	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ALPHA);
 	
 	blendModeShader.setUniformTexture("tex", cloudImg, 0);
 	blendModeShader.setUniform1f("maxAlpha", cloudMaxAlpha);
-	cloudMesh.draw();
-
+	blendModeShader.setUniformMatrix4f("transform", cloudATransform);
+	spriteMesh.draw();
+	
+	blendModeShader.setUniformMatrix4f("transform", cloudBTransform);
+	spriteMesh.draw();
+	
 	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 	blendModeShader.setUniformTexture("tex", sunImg, 0);
-	blendModeShader.setUniform1f("maxAlpha", 1.0f);
-	sunMesh.draw();
+	blendModeShader.setUniform1f("maxAlpha", 0.5f);
+	blendModeShader.setUniformMatrix4f("transform", sunTransform);
 
+	spriteMesh.draw();
+	
 	blendModeShader.end();
 }
 
@@ -78,6 +89,11 @@ void ofApp::keyPressed(int key){
 	case 'n':
 		ofSetLogLevel(ofLogLevel::OF_LOG_NOTICE);
 		break;
+
+	case ofKey::OF_KEY_RIGHT:
+		charSpeed = 0.4f;
+		break;
+
 	default:
 		break;
 	}
@@ -85,7 +101,15 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
+	switch (key)
+	{
+	case ofKey::OF_KEY_RIGHT:
+		charSpeed = 0.0f;
+		break;
 
+	default:
+		break;
+	}
 }
 
 //--------------------------------------------------------------
@@ -153,4 +177,32 @@ void ofApp::buildMesh(ofMesh& mesh, float w, float h, glm::vec3 pos)
 
 	ofIndexType indices[6] = {0,1,2,2,3,0};
 	mesh.addIndices(indices, 6);
+}
+
+
+void ofApp::buildSpriteMesh()
+{
+	float verts[] = {-1.0f, -1.0f, 0.0f,
+	-1.0f, 1.0f, 0.0f,
+	1.0f, 1.0f, 0.0f,
+	1.0f, -1.0f, 0.0f 
+	};
+	float uvs[] = { 0,0, 0,1, 1,1, 1,0 };
+
+	for (int i = 0; i < 4; ++i)
+	{
+		int idx = i * 3;
+		int uvIdx = i * 2;
+		spriteMesh.addVertex(glm::vec3(verts[idx], verts[idx + 1], verts[idx + 2]));
+		spriteMesh.addTexCoord(glm::vec2(uvs[uvIdx], uvs[uvIdx + 1]));
+	}
+	ofIndexType indices[6] = { 0,1,2,2,3,0 };
+	spriteMesh.addIndices(indices, 6);
+}
+
+void ofApp::buildRenderTransform(glm::mat4& outTransform, const glm::vec3& trans, float rot, const glm::vec3& scale)
+{
+	outTransform = glm::translate(trans); // translate 순서가 마지막에 와야하지 않을까?
+	outTransform = glm::rotate(outTransform, rot, glm::vec3(0.0, 0.0, 1.0));
+	outTransform = glm::scale(outTransform, scale);
 }
