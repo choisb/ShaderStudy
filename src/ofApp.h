@@ -3,8 +3,8 @@
 #include "ofMain.h"
 
 struct cameraData {
-	glm::vec3 position;
-	float rotation;
+	glm::vec3 pos;
+	float fov;
 };
 
 class ofApp : public ofBaseApp {
@@ -27,5 +27,8 @@ public:
 	void gotMessage(ofMessage msg);
 
 private:
+	ofMesh torusMesh;
+	ofShader uvShader;
 
+	cameraData cam;
 };
