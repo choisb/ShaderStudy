@@ -2,6 +2,11 @@
 
 #include "ofMain.h"
 
+struct cameraData {
+	glm::vec3 position;
+	float rotation;
+};
+
 class ofApp : public ofBaseApp {
 
 public:
@@ -24,7 +29,9 @@ public:
 private:
 	void buildMesh(ofMesh& mesh, float w, float h, glm::vec3 pos);
 	void buildSpriteMesh();
-	void buildRenderTransform(glm::mat4& outTransform, const glm::vec3& trans, float rot, const glm::vec3& scale);
+	glm::mat4 buildRenderTransform(const glm::vec3& trans, float rot, const glm::vec3& scale);
+	glm::mat4 buildViewMatrix(const cameraData& camera);
+
 	//ofMesh charMesh;
 	ofImage alienSprite;
 
@@ -35,7 +42,7 @@ private:
 	//ofMesh cloudMesh;
 	ofImage cloudImg;
 	float cloudMaxAlpha = 1.0f;
-
+	
 	glm::mat4 cloudATransform;
 	glm::mat4 cloudBTransform;
 
@@ -56,4 +63,6 @@ private:
 	float charSpeed = 0.0f;
 
 	ofMesh spriteMesh;
+
+	cameraData camera;
 };

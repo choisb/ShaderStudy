@@ -29,11 +29,15 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
 
-	buildRenderTransform(backgroundTransform, glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-	buildRenderTransform(charTransform, charPos, 0.0f, glm::vec3(0.1f, 0.2f, 1.0f));
-	buildRenderTransform(cloudATransform, glm::vec3(-0.5f, 0.0f, 0.0f), 0.0f, glm::vec3(0.25f, 0.16f, 1.0f));
-	buildRenderTransform(cloudBTransform, glm::vec3(0.2f, 0.2f, 0.0f), 0.0f, glm::vec3(0.25f, 0.16f, 1.0f));
+	camera.position = glm::vec3(0.0f, 0.0f, 0.0f);
+	const glm::mat4 viewMatrix = buildViewMatrix(camera);
+	const glm::mat4 projMatrix = glm::ortho(-1.33f, 1.33f, -1.0f, 1.0f, 0.0f, 10.0f);
+	const glm::mat4 projViewMatrix = projMatrix * viewMatrix;
 
+	backgroundTransform = buildRenderTransform(glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	charTransform = buildRenderTransform(charPos, 0.0f, glm::vec3(0.1f, 0.2f, 1.0f));
+	cloudATransform = buildRenderTransform(glm::vec3(-0.5f, 0.0f, 0.0f), 0.0f, glm::vec3(0.25f, 0.16f, 1.0f));
+	cloudBTransform = buildRenderTransform(glm::vec3(0.2f, 0.2f, 0.0f), 0.0f, glm::vec3(0.25f, 0.16f, 1.0f));
 	ofEnableDepthTest(); // 깊이 버퍼를 만들어서 프래그먼트 세이더 단계에서 깊이 테스트를 하도록 활성화. 깊이는 버텍스의 z값 사용.
 	ofDisableBlendMode();
 	spritesheetShader.begin();
@@ -43,14 +47,16 @@ void ofApp::draw(){
 	spritesheetShader.setUniformTexture("tex", alienSprite, 0);
 	spritesheetShader.setUniform2f("size", spriteSize);
 	spritesheetShader.setUniform2f("offset", spriteFrameOffset);
-	spritesheetShader.setUniformMatrix4f("transform", charTransform);
+	spritesheetShader.setUniformMatrix4f("projView", projViewMatrix);
+	spritesheetShader.setUniformMatrix4f("model", charTransform);
 	spriteMesh.draw();
 	spritesheetShader.end();
 
 	alphaTestShader.begin();
 
 	alphaTestShader.setUniformTexture("tex", backgroundImg, 0);
-	alphaTestShader.setUniformMatrix4f("transform", backgroundTransform);
+	alphaTestShader.setUniformMatrix4f("projView", projViewMatrix);
+	alphaTestShader.setUniformMatrix4f("model", backgroundTransform);
 
 	spriteMesh.draw();
 	alphaTestShader.end();
@@ -63,16 +69,19 @@ void ofApp::draw(){
 	
 	blendModeShader.setUniformTexture("tex", cloudImg, 0);
 	blendModeShader.setUniform1f("maxAlpha", cloudMaxAlpha);
-	blendModeShader.setUniformMatrix4f("transform", cloudATransform);
+	blendModeShader.setUniformMatrix4f("projView", projViewMatrix);
+	blendModeShader.setUniformMatrix4f("model", cloudATransform);
 	spriteMesh.draw();
 	
-	blendModeShader.setUniformMatrix4f("transform", cloudBTransform);
+	blendModeShader.setUniformMatrix4f("projView", projViewMatrix);
+	blendModeShader.setUniformMatrix4f("model", cloudBTransform);
 	spriteMesh.draw();
 	
 	ofEnableBlendMode(ofBlendMode::OF_BLENDMODE_ADD);
 	blendModeShader.setUniformTexture("tex", sunImg, 0);
 	blendModeShader.setUniform1f("maxAlpha", 0.5f);
-	blendModeShader.setUniformMatrix4f("transform", sunTransform);
+	blendModeShader.setUniformMatrix4f("projView", projViewMatrix);
+	blendModeShader.setUniformMatrix4f("model", sunTransform);
 
 	spriteMesh.draw();
 	
@@ -200,9 +209,16 @@ void ofApp::buildSpriteMesh()
 	spriteMesh.addIndices(indices, 6);
 }
 
-void ofApp::buildRenderTransform(glm::mat4& outTransform, const glm::vec3& trans, float rot, const glm::vec3& scale)
+glm::mat4 ofApp::buildRenderTransform(const glm::vec3& trans, float rot, const glm::vec3& scale)
 {
-	outTransform = glm::translate(trans); // translate 순서가 마지막에 와야하지 않을까?
-	outTransform = glm::rotate(outTransform, rot, glm::vec3(0.0, 0.0, 1.0));
-	outTransform = glm::scale(outTransform, scale);
+	glm::mat4 ReturnTransform = glm::translate(trans);
+	ReturnTransform = glm::rotate(ReturnTransform, rot, glm::vec3(0.0, 0.0, 1.0));
+	ReturnTransform = glm::scale(ReturnTransform, scale);
+	return ReturnTransform;
+}
+
+glm::mat4 ofApp::buildViewMatrix(const cameraData& camera)
+{
+	glm::mat4 ReturnTransform = glm::inverse(buildRenderTransform(camera.position, camera.rotation, glm::vec3(1.0f, 1.0f, 1.0f)));
+	return ReturnTransform;
 }
