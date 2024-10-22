@@ -1,11 +1,12 @@
 #pragma once
 
 #include "ofMain.h"
-
-struct cameraData {
+struct CameraData
+{
 	glm::vec3 pos;
 	float fov;
 };
+
 
 class ofApp : public ofBaseApp {
 
@@ -26,9 +27,7 @@ public:
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
 
-private:
+	ofShader normalShader;
 	ofMesh torusMesh;
-	ofShader uvShader;
-
-	cameraData cam;
+	CameraData cam;
 };
