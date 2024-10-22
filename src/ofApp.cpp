@@ -15,6 +15,7 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+	ofEnableDepthTest();
 	cam.pos = glm::vec3(0, 0, 1);
 	cam.fov = glm::radians(100.0f);
 	const float aspect = 1024.0f / 768.0f;
