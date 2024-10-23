@@ -26,9 +26,11 @@ void ofApp::draw(){
 	const glm::mat4 proj = glm::perspective(cam.fov, aspect, 0.01f, 10.0f);
 
 	const glm::mat4 mvp = proj * view * model;
+	const glm::mat4 invTransModel = glm::transpose(glm::inverse(glm::mat3(model))); // 법선 벡터를 월드공간으로 변환하기 위해 역전치행렬 사용. (https://dev-sbee.tistory.com/248 참고)
 
 	normalShader.begin();
 	normalShader.setUniformMatrix4f("mvp", mvp);
+	normalShader.setUniformMatrix4f("invTransModel", invTransModel);
 	torusMesh.draw();
 	normalShader.end();
 }
