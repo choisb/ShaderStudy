@@ -5,7 +5,7 @@ void ofApp::setup(){
 	ofDisableArbTex(); // (레거시 지원용)텍스처의 스크린 픽셀 좌표 기능 비활성화. UV사용시 필요
 	ofLogToConsole();
 	torusMesh.load("mesh/torus.ply");
-	diffuseShader.load("shader/vertex/mesh.vert", "shader/fragment/diffuse.frag");
+	diffuseShader.load("shader/vertex/rimlight.vert", "shader/fragment/rimlight.frag");
 
 	dirLight.direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
 	dirLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -38,9 +38,11 @@ void ofApp::draw(){
 	diffuseShader.begin();
 	diffuseShader.setUniformMatrix4f("mvp", mvp);
 	diffuseShader.setUniformMatrix4f("invTransModel", invTransModel);
+	diffuseShader.setUniformMatrix4f("model", model);
 	diffuseShader.setUniform3f("meshCol", glm::vec3(1, 0, 0));
 	diffuseShader.setUniform3f("lightDir", dirLight.getLightDireciton());
 	diffuseShader.setUniform3f("lightCol", dirLight.getLightColor());
+	diffuseShader.setUniform3f("cameraPos", cam.pos);
 	torusMesh.draw();
 	diffuseShader.end();
 }
