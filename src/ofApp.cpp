@@ -5,8 +5,19 @@ void ofApp::setup(){
 	ofDisableArbTex(); // (레거시 지원용)텍스처의 스크린 픽셀 좌표 기능 비활성화. UV사용시 필요
 	ofLogToConsole();
 	torusMesh.load("mesh/torus.ply");
-	normalShader.load("shader/vertex/mesh.vert", "shader/fragment/normal_vis.frag");
+	diffuseShader.load("shader/vertex/mesh.vert", "shader/fragment/diffuse.frag");
 
+	dirLight.direction = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
+	dirLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
+	dirLight.intensity = 1.0f;
+
+	cam.pos = glm::vec3(0.0f, 0.75f, 1.0f);
+	cam.fov = glm::radians(90.0f);
+	cam.angle = glm::radians(-45.f);
+	cam.right = glm::vec3(1.0f, 0.0f, 0.0f);
+	cam.aspect = 1024.0f / 768.0f;
+	cam.nearPlan = 0.01f;
+	cam.farPlan = 10.0f;
 }
 
 //--------------------------------------------------------------
@@ -17,22 +28,21 @@ void ofApp::update(){
 void ofApp::draw(){
 	ofEnableDepthTest();
 
-	cam.pos = glm::vec3(0, 0, 1);
-	cam.fov = glm::radians(90.0f);
-	const float aspect = 1024.0f / 768.0f;
-
-	const glm::mat4 model = glm::rotate(1.0f, glm::vec3(1.f)) * glm::scale(glm::vec3(0.5f));
-	const glm::mat4 view = glm::inverse(glm::translate(cam.pos));
-	const glm::mat4 proj = glm::perspective(cam.fov, aspect, 0.01f, 10.0f);
+	const glm::mat4 model = glm::rotate(glm::radians(90.0f), glm::vec3(1.0f, 0.0, 0.0f)) * glm::scale(glm::vec3(0.5f));
+	const glm::mat4 view = glm::inverse(glm::translate(cam.pos) * glm::rotate(cam.angle, cam.right));
+	const glm::mat4 proj = glm::perspective(cam.fov, cam.aspect, cam.nearPlan, cam.farPlan);
 
 	const glm::mat4 mvp = proj * view * model;
 	const glm::mat4 invTransModel = glm::transpose(glm::inverse(glm::mat3(model))); // 법선 벡터를 월드공간으로 변환하기 위해 역전치행렬 사용. (https://dev-sbee.tistory.com/248 참고)
 
-	normalShader.begin();
-	normalShader.setUniformMatrix4f("mvp", mvp);
-	normalShader.setUniformMatrix4f("invTransModel", invTransModel);
+	diffuseShader.begin();
+	diffuseShader.setUniformMatrix4f("mvp", mvp);
+	diffuseShader.setUniformMatrix4f("invTransModel", invTransModel);
+	diffuseShader.setUniform3f("meshCol", glm::vec3(1, 0, 0));
+	diffuseShader.setUniform3f("lightDir", dirLight.getLightDireciton());
+	diffuseShader.setUniform3f("lightCol", dirLight.getLightColor());
 	torusMesh.draw();
-	normalShader.end();
+	diffuseShader.end();
 }
 
 //--------------------------------------------------------------
